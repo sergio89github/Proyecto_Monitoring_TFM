@@ -65,6 +65,7 @@ services:
 
 volumes:
   elastic-data:
+    external: true
 
 networks:
   traefik-swarm:
