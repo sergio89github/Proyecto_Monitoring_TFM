@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    environment:
+     - discovery.type=single-node
+     - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping  
+     - "ES_JAVA_OPTS=-Xms2048m -Xmx2048m"
+     - xpack.security.enabled=true
+     - ELASTIC_PASSWORD=3l4st1C@21
+     - xpack.monitoring.collection.enabled=true
+     
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      memlock:
+        soft: -1
+        hard: -1
+    restart: on-failure   
+    volumes:
+      - elastic-data:/usr/share/elasticsearch/data 
+    ports:
+      - 9200:9200
+      - 9300:9300 # required for Performance Analyzer
+    networks:
+      - elastic-stack
+    deploy:
+      placement:
+        constraints:
+          - "node.role == worker"               
+ 
+  kibana:      
+    image: docker.elastic.co/kibana/kibana:7.11.1
+    ports:
+      - 5601:5601
+#    volumes:
+#      - kibana_storage:/usr/share/kibana/config  
+    healthcheck:
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:5601/status"]
+      interval: 15s
+      timeout: 2s
+      retries: 10
+    configs:
+      - source: kibana_config
+        target: /usr/share/kibana/config/kibana.yml 
+    networks:
+        - traefik-swarm
+        - elastic-stack
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.kibana.rule=Host(`kibana-local.lucual18.com`)"
+        - "traefik.http.services.kibana.loadbalancer.server.port=5601"
+        - "traefik.http.routers.kibana.entrypoints=https"
+        - "traefik.docker.network=traefik-swarm"
+        - "traefik.http.routers.kibana.tls=true"
+      placement:    
+        constraints: 
+          - "node.role == worker"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200/
+
+
+volumes:
+  elastic-data:
+
+networks:
+  traefik-swarm:
+    external: true
+  elastic-stack:
+    external: true
+
+configs:
+#  elastic_config:
+#    file: $PWD/elasticsearch/config/elasticsearch.yml
+  kibana_config:
+    file: $PWD/kibana/config/kibana.yml
+

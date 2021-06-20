@@ -1,0 +1,17 @@
+stages:
+  - deploy
+
+build_image:
+  tags: 
+    - invoicy-aws-pro-shell-master-01
+  stage: deploy
+  when: manual
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker stack deploy --compose-file docker-compose.traefik.yml monitoring
+
+  only:
+    - /^rc-.*$/
+    - master
+    - develop 
+    - invoicy-swarm-pro

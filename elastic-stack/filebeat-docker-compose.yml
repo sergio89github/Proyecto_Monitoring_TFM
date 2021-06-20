@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.11.1
+    user: root
+    networks:
+      - elastic-stack
+    configs:
+      - source: fb_config
+        target: /usr/share/filebeat/filebeat.yml
+    volumes:
+      - filebeat:/usr/share/filebeat/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      # This is needed for filebeat to load container log path as specified in filebeat.yml
+      - /var/lib/docker/containers/:/var/lib/docker/containers/:ro
+      # This is needed for filebeat to load logs for system and auth modules
+      - /var/log/:/var/log/:ro
+    environment:
+      - ELASTICSEARCH_HOST= ["elasticsearch:9200"]
+      - KIBANA_HOST= ["kibana:5601"]
+      - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME:-elastic}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD:-3l4st1C@21}
+    # disable strict permission checks
+    command: ["--strict.perms=false"]
+    deploy:
+      mode: global
+
+networks:
+  elastic-stack:
+    external: true
+
+volumes:
+  filebeat:
+
+configs:
+  fb_config:
+    file: $PWD/filebeat/filebeat.yml

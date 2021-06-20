@@ -1,0 +1,45 @@
+filebeat.inputs:
+- type: container
+  paths: 
+    - '/var/lib/docker/containers/*/*.log'
+
+processors:
+- add_docker_metadata:
+    host: "unix:///var/run/docker.sock"
+
+- decode_json_fields:
+    fields: ["message"]
+    target: "json"
+    overwrite_keys: true
+
+output.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+  username: elastic
+  password: 3l4st1C@21
+  indices:
+    - index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+  loadbalance: true
+
+
+index.auto_expand_replicas: 0-all
+
+#index.number_of_shards: 2
+
+#index.number_of_replicas: 2
+
+setup.kibana:
+  host: 'kibana:5601'
+  username: elastic
+  password: 3l4st1C@21
+    #["https://test-swarm-kibana.lucual18.com"]
+setup.dashboards.enabled: true
+# If true and Kibana is not reachable at the time when dashboards are loaded,
+# it will retry to reconnect to Kibana instead of exiting with an error.
+setup.dashboards.retry.enabled: true
+# Duration interval between Kibana connection retries.
+setup.dashboards.retry.interval: 15s
+# Maximum number of retries before exiting with an error, 0 for unlimited retrying.
+setup.dashboards.retry.maximum: 5
+
+logging.json: true
+logging.metrics.enabled: true

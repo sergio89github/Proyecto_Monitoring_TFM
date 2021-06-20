@@ -1,0 +1,82 @@
+variables:
+  IMAGE_ELASTICSEARCH_APP: "docker.elastic.co/elasticsearch/elasticsearch:7.11.1"
+  IMAGE_KYBANA_APP: "docker.elastic.co/kibana/kibana:7.11.1"
+  IMAGE_FILEBEAT_APP: "docker.elastic.co/beats/filebeat:7.11.1"
+  IMAGE_LOGSTASH_APP: "docker.elastic.co/logstash/logstash:7.11.1"
+  NAME_SERVICE_ELASTIC: "elk"
+  NAME_SERVICE_BEATS: "elk_beat"
+
+
+stages:
+  - build_app
+  - start_service
+  - start_beats
+  - update_service
+  - stop_services
+
+
+build_lab_elk_app:
+  stage: build_app
+  tags: 
+    - invoicy-swarm-pre-shell-master-01
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker pull $IMAGE_ELASTICSEARCH_APP
+    - docker pull $IMAGE_KYBANA_APP
+    - docker pull $IMAGE_FILEBEAT_APP
+    - docker pull $IMAGE_LOGSTASH_APP
+  only:
+    - invoicy_swarm_pre
+  when: manual
+
+
+start_service:
+  stage: start_service
+  tags: 
+    - invoicy-swarm-pre-shell-master-01
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker stack deploy --with-registry-auth --compose-file docker-compose.yml $NAME_SERVICE_ELASTIC
+  only:
+    - invoicy_swarm_pre
+  when: manual
+
+
+start_beats:
+  stage: start_beats
+  tags: 
+    - invoicy-swarm-pre-shell-master-01
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker stack deploy --with-registry-auth --compose-file filebeat-docker-compose.yml $NAME_SERVICE_BEATS
+  only:
+    - invoicy_swarm_pre
+  when: manual
+
+
+update_service:
+  stage: update_service
+  tags: 
+    - invoicy-swarm-pre-shell-master-01
+  script:
+    - docker service update elk_kibana --force --image $IMAGE_KYBANA_APP
+    - docker service update elk_elasticsearch --force --image $IMAGE_ELASTICSEARCH_APP
+    - docker service update elk_logstash --force --image $IMAGE_LOGSTASH_APP
+    #- docker stack rm $NAME_SERVICE_BEATS
+    #- sleep 20 
+    #- docker stack deploy --compose-file filebeat-docker-compose.yml $NAME_SERVICE_BEATS
+  only:
+    - invoicy_swarm_pre
+  when: manual
+
+stop_services:
+  stage: stop_services
+  tags: 
+    - invoicy-swarm-pre-shell-master-01
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+    - docker stack rm $NAME_SERVICE_ELASTIC
+    - docker stack rm $NAME_SERVICE_BEATS
+  only:
+    - invoicy_swarm_pre
+  when: manual
