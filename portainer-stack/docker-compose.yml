@@ -26,7 +26,7 @@ services:
     deploy:
       labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer_local.lucual18.com`)"
+      - "traefik.http.routers.portainer.rule=Host(`portainer_local.dominio.com`)"
       - "traefik.http.routers.portainer.service=portainer@docker"
       - "traefik.http.services.portainer.loadbalancer.server.port=9000"
       - "traefik.http.routers.portainer.entrypoints=https"
