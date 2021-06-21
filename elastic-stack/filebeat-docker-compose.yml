@@ -20,7 +20,7 @@ services:
       - ELASTICSEARCH_HOST= ["elasticsearch:9200"]
       - KIBANA_HOST= ["kibana:5601"]
       - ELASTICSEARCH_USERNAME=${ELASTICSEARCH_USERNAME:-elastic}
-      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD:-3l4st1C@21}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD:-password}
     # disable strict permission checks
     command: ["--strict.perms=false"]
     deploy:
