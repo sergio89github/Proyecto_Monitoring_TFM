@@ -15,7 +15,7 @@ processors:
 output.elasticsearch:
   hosts: ["elasticsearch:9200"]
   username: elastic
-  password: 3l4st1C@21
+  password: password
   indices:
     - index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
   loadbalance: true
@@ -30,7 +30,7 @@ index.auto_expand_replicas: 0-all
 setup.kibana:
   host: 'kibana:5601'
   username: elastic
-  password: 3l4st1C@21
+  password: password
     #["https://test-swarm-kibana.lucual18.com"]
 setup.dashboards.enabled: true
 # If true and Kibana is not reachable at the time when dashboards are loaded,
