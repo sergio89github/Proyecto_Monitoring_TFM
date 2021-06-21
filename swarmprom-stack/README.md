@@ -9,20 +9,6 @@ and [Unsee](https://github.com/cloudflare/unsee).
 
 ## Install
 
-Clone this repository and run the monitoring stack:
-
-```bash
-$ git clone https://github.com/stefanprodan/swarmprom.git
-$ cd swarmprom
-
-ADMIN_USER=admin \
-ADMIN_PASSWORD=admin \
-SLACK_URL=https://hooks.slack.com/services/TOKEN \
-SLACK_CHANNEL=devops-alerts \
-SLACK_USER=alertmanager \
-docker stack deploy -c docker-compose.yml mon
-```
-
 Prerequisites:
 
 * Docker CE 17.09.0-ce or Docker EE 17.06.2-ee-3
